@@ -38,8 +38,9 @@ export class AuthService {
     }
 
     // Hash password
-    const saltRounds =
-      this.configService.getOrThrow<number>('BCRYPT_SALTROUNDS');
+    const saltRounds = Number(
+      this.configService.getOrThrow<number>('SALT_ROUNDS'),
+    );
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create user
@@ -100,7 +101,7 @@ export class AuthService {
 
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
       });
 
       const user = await this.usersService.findUserById(payload.sub);
@@ -111,7 +112,7 @@ export class AuthService {
       const accessToken = this.jwtService.sign(
         { sub: user.user.id, email: user.user.email },
         {
-          secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+          secret: this.configService.getOrThrow<string>('jwt.secret'),
           expiresIn: '15m',
         },
       );
@@ -126,12 +127,12 @@ export class AuthService {
     const payload = { sub: userId };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      secret: this.configService.getOrThrow<string>('jwt.secret'),
       expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
       expiresIn: '7d',
     });
 
