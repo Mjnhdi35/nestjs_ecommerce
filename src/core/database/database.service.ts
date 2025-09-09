@@ -8,6 +8,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     console.log('✅ Database module initialized');
+
     await this.dataSource.query('SELECT 1');
   }
 
