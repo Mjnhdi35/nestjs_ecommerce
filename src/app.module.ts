@@ -6,6 +6,7 @@ import { ormConfig } from './core/config/orm.config';
 import { DataSourceOptions } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './core/database/database.module';
+import { UsersModule } from './modules/users/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,6 +15,9 @@ import { DatabaseModule } from './core/database/database.module';
     }),
 
     DatabaseModule,
+
+    //Modules
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,6 +9,6 @@ export class UsersEntity extends BaseEntity {
   email: string;
   @Column()
   password: string;
-  @Column({ name: 'display_name', nullable: true })
+  @Column({ name: 'display_name', nullable: true, default: 'Display_Name' })
   displayName?: string;
 }
