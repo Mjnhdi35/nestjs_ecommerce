@@ -8,7 +8,7 @@ import { UsersEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUsersDto } from './dto/user.dto';
 
-Injectable();
+@Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntity)
