@@ -12,6 +12,7 @@ import {
   RefreshTokenDto,
   AuthResponseDto,
 } from './dto/auth.dto';
+import { JwtPayload } from './strategies/jwt.strategy';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -38,8 +39,9 @@ export class AuthService {
     }
 
     // Hash password
-    const saltRounds =
-      this.configService.getOrThrow<number>('BCRYPT_SALTROUNDS');
+    const saltRounds = Number(
+      this.configService.getOrThrow<number>('SALT_ROUNDS'),
+    );
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create user
@@ -51,7 +53,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.user.id);
+    const tokens = await this.generateTokens(user.user.id, user.user.email);
 
     return {
       ...tokens,
@@ -80,7 +82,7 @@ export class AuthService {
     }
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id);
+    const tokens = await this.generateTokens(user.id, user.email);
 
     return {
       ...tokens,
@@ -100,7 +102,7 @@ export class AuthService {
 
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
       });
 
       const user = await this.usersService.findUserById(payload.sub);
@@ -111,7 +113,7 @@ export class AuthService {
       const accessToken = this.jwtService.sign(
         { sub: user.user.id, email: user.user.email },
         {
-          secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+          secret: this.configService.getOrThrow<string>('jwt.secret'),
           expiresIn: '15m',
         },
       );
@@ -122,16 +124,19 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(userId: string) {
-    const payload = { sub: userId };
+  private async generateTokens(userId: string, email: string) {
+    const payload: JwtPayload = {
+      sub: userId,
+      email: email,
+    };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      secret: this.configService.getOrThrow<string>('jwt.secret'),
       expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
       expiresIn: '7d',
     });
 

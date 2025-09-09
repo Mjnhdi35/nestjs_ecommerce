@@ -28,3 +28,12 @@ export class UpdateUsersDto {
   @IsNotEmpty()
   displayName: string;
 }
+
+export class UserResponseDto {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
