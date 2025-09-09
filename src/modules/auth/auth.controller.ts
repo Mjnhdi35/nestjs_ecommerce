@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RefreshTokenDto } from './dto/auth.dto';
-
-import { IsPublic } from '../../core/common/decorators';
+import { UserResponseDto } from '../users/dto/user.dto';
+import { IsPublic, CurrentUser } from '../../core/common/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -34,14 +34,16 @@ export class AuthController {
   }
 
   @Get('profile')
-  async getProfile(@Request() req: any) {
-    return {
-      user: {
-        id: req.user.id,
-        username: req.user.username,
-        email: req.user.email,
-        displayName: req.user.displayName,
-      },
-    };
+  async getProfile(
+    @CurrentUser() user: UserResponseDto,
+  ): Promise<{ user: UserResponseDto }> {
+    return { user };
+  }
+
+  @Get('me')
+  async getMe(
+    @CurrentUser() user: UserResponseDto,
+  ): Promise<{ user: UserResponseDto }> {
+    return { user };
   }
 }

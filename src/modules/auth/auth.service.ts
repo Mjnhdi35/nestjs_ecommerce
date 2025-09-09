@@ -12,6 +12,7 @@ import {
   RefreshTokenDto,
   AuthResponseDto,
 } from './dto/auth.dto';
+import { JwtPayload } from './strategies/jwt.strategy';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -52,7 +53,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.user.id);
+    const tokens = await this.generateTokens(user.user.id, user.user.email);
 
     return {
       ...tokens,
@@ -81,7 +82,7 @@ export class AuthService {
     }
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id);
+    const tokens = await this.generateTokens(user.id, user.email);
 
     return {
       ...tokens,
@@ -123,8 +124,11 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(userId: string) {
-    const payload = { sub: userId };
+  private async generateTokens(userId: string, email: string) {
+    const payload: JwtPayload = {
+      sub: userId,
+      email: email,
+    };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.getOrThrow<string>('jwt.secret'),
