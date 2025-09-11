@@ -7,14 +7,20 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async onModuleInit() {
-    console.log('✅ Database module initialized');
-
-    await this.dataSource.query('SELECT 1');
+    console.log('✅ DatabaseService initialized');
+    try {
+      await this.dataSource.query('SELECT 1');
+    } catch (err) {
+      console.error('❌ Database connection failed:', err);
+      throw err;
+    }
   }
 
   async onModuleDestroy() {
-    console.log('🛑 Database module shutting down');
-    await this.dataSource.destroy();
+    console.log('🛑 DatabaseService shutting down');
+    if (this.dataSource.isInitialized) {
+      await this.dataSource.destroy();
+    }
   }
 
   getDataSource(): DataSource {
@@ -23,5 +29,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   getManager(): EntityManager {
     return this.dataSource.manager;
+  }
+
+  async transaction<T>(
+    runInTransaction: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
+    return this.dataSource.transaction(runInTransaction);
   }
 }

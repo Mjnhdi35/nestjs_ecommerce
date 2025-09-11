@@ -1,17 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { ormConfig } from './core/config/orm.config';
 import { jwtConfig } from './core/config/jwt.config';
-import { DataSourceOptions } from 'typeorm';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from './core/database/database.module';
-import { UsersModule } from './modules/users/user.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
-import { Reflector } from '@nestjs/core';
+import { CacheService } from './core/redis/cache.service';
+import { RedisModule } from './core/redis/redis.module';
+import { CoreModule } from './core/core.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,19 +17,11 @@ import { Reflector } from '@nestjs/core';
     }),
 
     DatabaseModule,
-
-    //Modules
-    UsersModule,
-    AuthModule,
+    RedisModule,
+    CoreModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    Reflector,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
+  providers: [AppService, CacheService],
+  exports: [CacheService],
 })
 export class AppModule {}

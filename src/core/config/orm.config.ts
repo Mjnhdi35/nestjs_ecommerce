@@ -11,12 +11,12 @@ export const ormConfig = registerAs('database', () => ({
   database: process.env.DB_NAME,
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  synchronize: process.env.NODE_ENV === 'development',
-  logging: process.env.NODE_ENV === 'development',
-  migrationsRun: true,
-  dropSchema: false,
+  synchronize: true,
+  logging: true,
 }));
 
-export const databaseOptions: DataSourceOptions = { ...ormConfig() };
+export const databaseOptions: DataSourceOptions = {
+  ...(ormConfig() as DataSourceOptions),
+};
 
-export const AppDatasource = new DataSource(databaseOptions);
+export const AppDataSource = new DataSource(databaseOptions);
