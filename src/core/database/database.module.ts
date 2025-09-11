@@ -26,7 +26,6 @@ import { DatabaseService } from './database.service';
         synchronize:
           configService.getOrThrow<boolean>('database.synchronize') || false,
         logging: configService.getOrThrow<boolean>('database.logging'),
-        autoLoadEntities: true,
       }),
     }),
   ],

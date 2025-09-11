@@ -12,10 +12,6 @@ export class LoginDto {
 }
 
 export class RegisterDto {
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -41,7 +37,6 @@ export class AuthResponseDto {
   refreshToken: string;
   user: {
     id: string;
-    username: string;
     email: string;
     displayName: string;
   };

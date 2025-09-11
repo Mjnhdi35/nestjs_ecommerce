@@ -16,17 +16,13 @@ export class UsersService {
   ) {}
 
   async createUsers(body: CreateUsersDto) {
-    const { email, username, ...data } = body;
-    const usernameExisting = await this.findUserByUsername(username);
-    if (usernameExisting) {
-      throw new ConflictException('Duplicated');
-    }
+    const { email, ...data } = body;
+
     const emailExisting = await this.findUserByEmail(email);
     if (emailExisting) {
       throw new ConflictException('Duplicated');
     }
     const newUser = this.usersRepository.create({
-      username,
       email,
       ...data,
     });
@@ -41,10 +37,8 @@ export class UsersService {
     }
     return { message: 'Successfull', user };
   }
+
   async findUserByEmail(email: string) {
     return await this.usersRepository.findOneBy({ email });
-  }
-  async findUserByUsername(username: string) {
-    return await this.usersRepository.findOneBy({ username });
   }
 }

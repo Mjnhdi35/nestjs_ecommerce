@@ -33,13 +33,6 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto);
   }
 
-  @Get('profile')
-  async getProfile(
-    @CurrentUser() user: UserResponseDto,
-  ): Promise<{ user: UserResponseDto }> {
-    return { user };
-  }
-
   @Get('me')
   async getMe(
     @CurrentUser() user: UserResponseDto,

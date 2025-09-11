@@ -24,20 +24,13 @@ export class AuthService {
   ) {}
 
   async register(body: RegisterDto): Promise<AuthResponseDto> {
-    const { email, username, password, displayName } = body;
+    const { email,  password, displayName } = body;
 
     // Check if user already exists
     const existingUserByEmail = await this.usersService.findUserByEmail(email);
     if (existingUserByEmail) {
       throw new ConflictException('Email already exists');
     }
-
-    const existingUserByUsername =
-      await this.usersService.findUserByUsername(username);
-    if (existingUserByUsername) {
-      throw new ConflictException('Username already exists');
-    }
-
     // Hash password
     const saltRounds = Number(
       this.configService.getOrThrow<number>('SALT_ROUNDS'),
@@ -47,7 +40,6 @@ export class AuthService {
     // Create user
     const user = await this.usersService.createUsers({
       email,
-      username,
       password: hashedPassword,
       displayName,
     });
@@ -59,7 +51,6 @@ export class AuthService {
       ...tokens,
       user: {
         id: user.user.id,
-        username: user.user.username,
         email: user.user.email,
         displayName: user.user.displayName || 'Display_Name',
       },
@@ -88,7 +79,7 @@ export class AuthService {
       ...tokens,
       user: {
         id: user.id,
-        username: user.username,
+    
         email: user.email,
         displayName: user.displayName || 'Display_Name',
       },
