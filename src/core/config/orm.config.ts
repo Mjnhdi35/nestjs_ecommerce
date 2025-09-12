@@ -9,10 +9,17 @@ export const ormConfig = registerAs('database', () => ({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  synchronize: true,
-  logging: true,
+  // Ensure all entities across src/** are registered in dev, dist/** in prod
+  entities:
+    process.env.NODE_ENV === 'production'
+      ? ['dist/**/*.entity.js']
+      : ['src/**/*.entity.ts'],
+  migrations:
+    process.env.NODE_ENV === 'production'
+      ? ['dist/core/migrations/*.{js}']
+      : ['src/core/migrations/*.{ts}'],
+  synchronize: process.env.NODE_ENV === 'development',
+  logging: process.env.NODE_ENV === 'development',
 }));
 
 export const databaseOptions: DataSourceOptions = {
