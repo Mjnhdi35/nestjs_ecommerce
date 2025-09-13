@@ -11,6 +11,7 @@ export class UsersEntity extends CoreEntity {
     type: 'nvarchar',
     length: 100,
     name: 'display_name',
+    nullable: true,
   })
   @Expose({ name: 'display_name' })
   displayName: string;

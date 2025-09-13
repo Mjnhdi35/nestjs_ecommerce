@@ -12,7 +12,7 @@ import { RegisterDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly ACCESS_TTL = '1m'; // Access token TTL
+  private readonly ACCESS_TTL = '15m'; // Access token TTL
   private readonly REFRESH_TTL = '7d'; // Refresh token TTL
   private readonly REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -56,13 +56,9 @@ export class AuthService {
     const user = await this.usersService.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    // chỉ cần cấp lại access token
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, role: user.role },
-      { expiresIn: this.ACCESS_TTL },
-    );
+    const tokens = await this.generateAndCacheTokens(user);
 
-    return { access_token: accessToken };
+    return { ...tokens };
   }
 
   async logout(userId: string) {

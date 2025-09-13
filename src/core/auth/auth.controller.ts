@@ -30,8 +30,8 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Get('me')
   async getProfile(@Req() req: any) {
-    return req.user; // payload đã được gắn từ JwtStrategy
+    return req.user;
   }
 }
