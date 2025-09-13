@@ -1,8 +1,8 @@
-import * as bcrypt from 'bcrypt';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
-import { CoreEntity } from '../../../core/common/entities/core.entity';
-import { Role } from '../../../core/types/role.enum';
-import { Exclude, Expose } from 'class-transformer';
+import * as bcrypt from 'bcrypt'
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm'
+import { CoreEntity } from '../../../core/common/entities/core.entity'
+import { Role } from '../../../core/types/role.enum'
+import { Exclude, Expose } from 'class-transformer'
 
 @Entity('users')
 export class UsersEntity extends CoreEntity {
@@ -14,28 +14,28 @@ export class UsersEntity extends CoreEntity {
     nullable: true,
   })
   @Expose({ name: 'display_name' })
-  displayName: string;
+  displayName: string
 
   @Column({ unique: true })
-  email: string;
+  email: string
 
   @Column({ type: 'nvarchar' })
   @Exclude()
-  password: string;
+  password: string
 
   @Column({ type: 'enum', enum: Role, default: Role.GUEST })
-  role: Role;
+  role: Role
 
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
     if (this.password && !this.password.startsWith('$2b$')) {
-      const saltRounds = Number(process.env.SALT_ROUNDS ?? 10);
-      this.password = await bcrypt.hash(this.password, saltRounds);
+      const saltRounds = Number(process.env.SALT_ROUNDS ?? 10)
+      this.password = await bcrypt.hash(this.password, saltRounds)
     }
   }
 
   async comparePassword(plain: string): Promise<boolean> {
-    return bcrypt.compare(plain, this.password);
+    return bcrypt.compare(plain, this.password)
   }
 }

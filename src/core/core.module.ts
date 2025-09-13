@@ -1,6 +1,6 @@
-import { Global, Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from '../modules/users/users.module';
+import { Global, Module } from '@nestjs/common'
+import { AuthModule } from './auth/auth.module'
+import { UsersModule } from '../modules/users/users.module'
 
 @Global()
 @Module({

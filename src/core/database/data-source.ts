@@ -1,3 +1,3 @@
-import { AppDataSource } from '../config/orm.config';
+import { AppDataSource } from '../config/orm.config'
 
-export default AppDataSource;
+export default AppDataSource

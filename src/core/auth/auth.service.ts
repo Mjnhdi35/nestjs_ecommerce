@@ -7,19 +7,17 @@ import {
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../../modules/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { CacheService } from '../redis/cache.service';
+import { AuthCacheService } from '../redis/auth-cache.service';
 import { RegisterDto } from './dto/auth.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  private readonly ACCESS_TTL = '15m'; // Access token TTL
-  private readonly REFRESH_TTL = '7d'; // Refresh token TTL
-  private readonly REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
-
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly cacheService: CacheService,
+    private readonly authCacheService: AuthCacheService,
+    private readonly configService: ConfigService,
   ) {}
 
   async validateUser(email: string, password: string) {
@@ -38,9 +36,14 @@ export class AuthService {
     if (user) {
       throw new ConflictException('Duplicated');
     }
-    const newUser = this.usersService.create({ email, displayName, ...data });
+    const newUser = await this.usersService.create({
+      email,
+      displayName,
+      ...data,
+    });
+    const tokens = await this.generateAndCacheTokens(newUser);
 
-    return await this.generateAndCacheTokens(newUser);
+    return { ...tokens };
   }
 
   async login(user: any) {
@@ -48,21 +51,30 @@ export class AuthService {
   }
 
   async refreshToken(userId: string, token: string) {
-    const cached = await this.cacheService.get<string>(`refresh:${userId}`);
+    // Check if refresh token exists
+    const hasToken = await this.authCacheService.hasRefreshToken(userId);
+    if (!hasToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    // Get and validate refresh token
+    const cached = await this.authCacheService.getRefreshToken(userId);
     if (!cached || cached !== token) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    // Get user
     const user = await this.usersService.findOneById(userId);
     if (!user) throw new NotFoundException('User not found');
 
+    // Generate new tokens (this will replace the old refresh token)
     const tokens = await this.generateAndCacheTokens(user);
 
     return { ...tokens };
   }
 
   async logout(userId: string) {
-    await this.cacheService.del(`refresh:${userId}`);
+    await this.authCacheService.deleteRefreshToken(userId);
     return { message: 'Logged out' };
   }
 
@@ -73,17 +85,27 @@ export class AuthService {
     const payload = { sub: user.id, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.ACCESS_TTL,
+      expiresIn: this.configService.get<string>('jwt.expiresIn'),
     });
 
+    const refreshExpiresIn = this.configService.get<string>(
+      'jwt.refreshExpiresIn',
+    );
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: this.REFRESH_TTL,
+      secret: this.configService.get<string>('jwt.refreshSecret'),
+      expiresIn: refreshExpiresIn,
     });
 
-    await this.cacheService.set(
-      `refresh:${user.id}`,
+    // Calculate TTL from JWT config using AuthCacheService
+    const refreshTtlSeconds = this.authCacheService.parseJwtExpirationToSeconds(
+      refreshExpiresIn as string,
+    );
+
+    // Use AuthCacheService for refresh tokens with proper TTL handling
+    await this.authCacheService.setRefreshToken(
+      user.id,
       refreshToken,
-      this.REFRESH_TTL_SECONDS,
+      refreshTtlSeconds,
     );
 
     return { access_token: accessToken, refresh_token: refreshToken };

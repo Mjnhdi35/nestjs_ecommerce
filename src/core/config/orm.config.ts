@@ -1,6 +1,6 @@
-import 'dotenv/config';
-import { registerAs } from '@nestjs/config';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import 'dotenv/config'
+import { registerAs } from '@nestjs/config'
+import { DataSource, DataSourceOptions } from 'typeorm'
 
 export const ormConfig = registerAs('database', () => ({
   type: 'mysql' as const,
@@ -20,10 +20,10 @@ export const ormConfig = registerAs('database', () => ({
       : ['src/core/migrations/*.{ts}'],
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
-}));
+}))
 
 export const databaseOptions: DataSourceOptions = {
   ...(ormConfig() as DataSourceOptions),
-};
+}
 
-export const AppDataSource = new DataSource(databaseOptions);
+export const AppDataSource = new DataSource(databaseOptions)

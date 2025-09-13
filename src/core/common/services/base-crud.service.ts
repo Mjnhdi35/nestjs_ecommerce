@@ -48,22 +48,24 @@ export abstract class BaseCrudService<T extends ObjectLiteral> {
     return this.repository.findOne({ where: { id } as any });
   }
 
-  async findOneByIdCached(id: string | number, ttl = 60): Promise<T | null> {
-    const key = `${this.repository.metadata.tableName}:id:${id}`;
-    const cached = await this.cacheService.get<T>(key);
+  async findOneByIdCached(
+    id: string | number,
+    ttl?: number,
+  ): Promise<T | null> {
+    const entityName = this.repository.metadata.tableName;
+    const cached = await this.cacheService.getEntity<T>(entityName, id);
     if (cached) return cached;
 
     const entity = await this.findOneById(id);
-    if (entity) await this.cacheService.set(key, entity, ttl);
+    if (entity) {
+      await this.cacheService.setEntity(entityName, id, entity, ttl);
+    }
     return entity;
   }
 
   protected async invalidateCache(id: string | number) {
-    const pattern = `${this.repository.metadata.tableName}:*${id}*`;
-    const keys = await this.cacheService.keys(pattern);
-    if (keys.length)
-      await Promise.all(keys.map((k) => this.cacheService.del(k)));
-
-    this.logger.log(`Cache invalidated: ${keys.join(', ')}`);
+    const entityName = this.repository.metadata.tableName;
+    await this.cacheService.invalidateEntityCache(entityName, id);
+    this.logger.log(`Cache invalidated for ${entityName}:${id}`);
   }
 }
