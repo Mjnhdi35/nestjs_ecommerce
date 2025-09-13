@@ -1,28 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { ormConfig } from './core/config/orm.config';
-import { jwtConfig } from './core/config/jwt.config';
-import { redisConfig } from './core/config/redis.config';
-import { DatabaseModule } from './core/database/database.module';
-import { CacheService } from './core/redis/cache.service';
-import { RedisModule } from './core/redis/redis.module';
 import { CoreModule } from './core/core.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [ormConfig, jwtConfig, redisConfig],
-    }),
-
-    DatabaseModule,
-    RedisModule,
-    CoreModule,
-  ],
+  imports: [CoreModule, UsersModule],
   controllers: [AppController],
-  providers: [AppService, CacheService],
-  exports: [CacheService],
+  providers: [AppService],
 })
 export class AppModule {}
