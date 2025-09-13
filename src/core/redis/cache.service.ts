@@ -10,7 +10,8 @@ export class CacheService {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     private readonly configService: ConfigService,
   ) {
-    this.defaultTtl = this.configService.get<number>('REDIS_DEFAULT_TTL') || 60;
+    this.defaultTtl =
+      +this.configService.getOrThrow<number>('redis.defaultTtl');
   }
 
   // Expose Redis client for specialized services

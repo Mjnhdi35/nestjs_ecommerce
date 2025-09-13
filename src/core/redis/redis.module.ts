@@ -9,11 +9,12 @@ import Redis from 'ioredis';
     {
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
+        const redisConfig = configService.get('redis');
         return new Redis({
-          host: configService.get<string>('REDIS_HOST'),
-          port: configService.get<number>('REDIS_PORT'),
-          password: configService.get<string>('REDIS_PASSWORD'),
-          db: 0,
+          host: redisConfig.host,
+          port: redisConfig.port,
+          password: redisConfig.password,
+          db: redisConfig.db,
         });
       },
       inject: [ConfigService],
